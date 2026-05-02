@@ -11,16 +11,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 20 (LTS)
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'  # 缓存依赖，加快运行速度
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm ci  # 比 npm install 更稳定，使用 package-lock.json 精确安装
 
-      - name: Run script
+      - name: Run dify.js script
         env:
           DIFY_TOKENS: ${{ secrets.DIFY_TOKENS }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-        run: node dify.js
+        run: node ./dify.js
