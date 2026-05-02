@@ -1,78 +1,30 @@
-import { WorkflowClient } from '../sdk/dify.js'
-import env from '../utils/env.js'
-import Notify from "../utils/notify.js";
+const axios = require('axios');
 
-class Task {
-    constructor(dify) {
-      this.dify = dify;
-    }
+// 👇 把这里替换成你刚才从Dify复制的Webhook完整URL
+const WEBHOOK_TRIGGER_URL = 'https://trigger.ai-plugin.io/triggers/webhook/P-dbyM6Fus5G4QamaTC0yz9I';
+const PUSHPLUS_TOKEN = process.env.PUSHPLUS_TOKEN;
 
-    taskName = "";
+async function run() {
+  try {
+    // 1. 调用Webhook，触发你的Dify工作流
+    console.log('正在触发Dify工作流...');
+    const workflowRes = await axios.post(WEBHOOK_TRIGGER_URL, {});
+    console.log('工作流执行完成，结果:', workflowRes.data);
 
-    async run() {}
-
-    toString() {
-      return `[${this.taskName}]`;
-    }
-}
-
-class WorkflowTask extends Task {
-    taskName = "Dify工作流任务";
-
-    async run() {
-      if(!env.DIFY_BASE_URL) {
-        throw new Error("没有配置Dify api地址，请检查后执行!");
-      }
-      let inputs = {}
-      try {
-        inputs = env.DIFY_INPUTS ? JSON.parse(env.DIFY_INPUTS) : {}
-      } catch (error) {
-        console.error('DIFY_INPUTS 格式错误，请确保是json格式, 可能会影响任务流执行')
-      }
-      const user = 'dify-schedule'
-      const workflow = new WorkflowClient(this.dify.token, env.DIFY_BASE_URL);
-      console.log(`正在获取Dify工作流基础信息...`)
-      const info = await workflow.info(user);
-      this.workfolwName = info.data?.name || '';
-      console.log(`Dify工作流【${info.data.name}】开始执行...`)
-      const response =  await workflow.getWorkflowResult(inputs, user,true)
-      this.result = response.text || ''
-    }
-
-    toString() {
-        return this.result
-    }
-}
-
-async function run(args) {
-    const tokens = env.DIFY_TOKENS.split(';');
-    let messageList = [];
-    for (let token of tokens) {
-      const workflow = new WorkflowTask({token});
-
-      await workflow.run(); // 执行
-
-      const content = workflow.toString();
-
-      console.log(content); // 打印结果
-
-      messageList.push(content);
-    }
-
-    const message = messageList.join(`\n${"-".repeat(15)}\n`);
-    Notify.pushMessage({
-      title: "Dify工作流定时助手",
-      content: message,
-      msgtype: "text"
+    // 2. 把工作流的结果推送给PushPlus
+    console.log('正在推送结果到PushPlus...');
+    const pushRes = await axios.post('https://www.pushplus.plus/send', {
+      token: PUSHPLUS_TOKEN,
+      title: '本周技术周报',
+      content: workflowRes.data,
+      template: 'markdown'
     });
+
+    console.log('推送成功！PushPlus响应:', pushRes.data);
+  } catch (err) {
+    console.error('执行出错:', err.response?.data || err.message);
+    process.exit(1);
   }
+}
 
-  run(process.argv.splice(2)).catch(error => {
-    Notify.pushMessage({
-      title: "",
-      content: `Error: ${error.message}`,
-      msgtype: "html"
-    });
-
-    throw error;
-  });
+run();
