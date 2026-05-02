@@ -11,18 +11,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20 (LTS)
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Install dependencies
-        # 改成 npm install，不需要锁文件也能安装依赖
         run: npm install
 
       - name: Run script
         env:
           DIFY_TOKENS: ${{ secrets.DIFY_TOKENS }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-        # 用根目录的主脚本文件
-        run: node ./q_dify_workflow.js
+        # 改用 workflow 文件夹里的 dify.js，路径明确存在
+        run: node ./workflow/dify.js
