@@ -25,4 +25,4 @@ jobs:
           DIFY_TOKENS: ${{ secrets.DIFY_TOKENS }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
         # q_dify_workflow.js
-        run: node ./q_dify_workflow.js
+        run: node ./workflow/dify.js
