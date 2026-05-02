@@ -15,14 +15,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'  # 缓存依赖，加快运行速度
+          cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci  # 比 npm install 更稳定，使用 package-lock.json 精确安装
+        run: npm ci
 
-      - name: Run dify.js script
+      - name: Run script
         env:
           DIFY_TOKENS: ${{ secrets.DIFY_TOKENS }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-        run: node ./dify.js
+        # q_dify_workflow.js
+        run: node ./q_dify_workflow.js
