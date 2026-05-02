@@ -1,7 +1,7 @@
 name: auto run
 on:
   schedule:
-    - cron: '13 17 * * 6'  # 北京时间周日 1:13 对应 UTC 17:13
+    - cron: '25 17 * * 6'  # 北京时间周日 1:25 对应 UTC 17:25
   workflow_dispatch:
 
 jobs:
