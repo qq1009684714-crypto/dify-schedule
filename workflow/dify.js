@@ -1,6 +1,6 @@
-const axios = require('axios');
+import axios from 'axios';
 
-// 👇 把这里替换成你刚才从Dify复制的Webhook完整URL
+// 👇 已经帮你配置好了完整的Webhook地址
 const WEBHOOK_TRIGGER_URL = 'https://trigger.ai-plugin.io/triggers/webhook/P-dbyM6Fus5G4QamaTC0yz9I';
 const PUSHPLUS_TOKEN = process.env.PUSHPLUS_TOKEN;
 
@@ -11,7 +11,7 @@ async function run() {
     const workflowRes = await axios.post(WEBHOOK_TRIGGER_URL, {});
     console.log('工作流执行完成，结果:', workflowRes.data);
 
-    // 2. 把工作流的结果推送给PushPlus
+    // 2. 推送结果到PushPlus
     console.log('正在推送结果到PushPlus...');
     const pushRes = await axios.post('https://www.pushplus.plus/send', {
       token: PUSHPLUS_TOKEN,
