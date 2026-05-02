@@ -15,14 +15,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # 改成 npm install，不需要锁文件也能安装依赖
+        run: npm install
 
       - name: Run script
         env:
           DIFY_TOKENS: ${{ secrets.DIFY_TOKENS }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-        # q_dify_workflow.js
-        run: node ./workflow/dify.js
+        # 用根目录的主脚本文件
+        run: node ./q_dify_workflow.js
