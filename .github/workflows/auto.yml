@@ -2,7 +2,7 @@ name: auto run
 on:
   schedule:
     - cron: '0 1 * * 1'  # 北京时间周一 9:00 对应 UTC 1:00
-  workflow_dispatch:
+  workflow_dispatch:      # 允许手动点击运行
 
 jobs:
   run:
@@ -17,11 +17,10 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm install rss-parser axios  # 自动安装需要的依赖
 
       - name: Run script
         env:
-          DIFY_TOKENS: ${{ secrets.DIFY_TOKENS }}
+          DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}  # 注意：这里改成DIFY_API_KEY，更标准
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-        # 改用 workflow 文件夹里的 dify.js，路径明确存在
         run: node ./workflow/dify.js
