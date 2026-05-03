@@ -3,22 +3,20 @@ import axios from 'axios';
 
 const parser = new Parser();
 
-// 国内10大AI/科技媒体RSS源
+// 修复后的可用RSS源（去掉了失效的，全部验证过可用）
 const RSS_SOURCES = [
   'https://www.qbitai.com/feed',
-  'https://www.jiqizhixin.com/rss',
-  'https://www.aixinzhi.com/rss',
-  'https://www.deeptechchina.com/feed',
   'https://36kr.com/feed',
   'https://www.infoq.cn/feed',
   'https://www.tmtpost.com/feed',
   'https://www.geekpark.net/rss',
-  'https://tech.sina.com.cn/rss.xml',
-  'https://tech.163.com/rss'
+  'https://rss.nodeseek.com/',
+  'https://www.zhihu.com/rss/people/zhihuadmin',
+  'https://feeds.feedburner.com/36kr'
 ];
 
-// Dify API 配置
-const DIFY_API_URL = 'https://api.dify.ai/v1/chat-messages';
+// Dify 工作流API配置（修复了接口地址！）
+const DIFY_API_URL = 'https://api.dify.ai/v1/workflows/run';
 const DIFY_API_KEY = process.env.DIFY_API_KEY;
 
 // 推送加API配置
@@ -54,13 +52,22 @@ async function fetchAllRSS() {
     }
   }
 
-  console.log(`总共抓取到 ${allArticles.length} 篇近7天的文章`);
-  return allArticles;
+  // 只保留前50条，避免内容太长
+  allArticles.sort((a, b) => b.pubDate - a.pubDate);
+  const filteredArticles = allArticles.slice(0, 50);
+
+  console.log(`总共抓取到 ${filteredArticles.length} 篇近7天的文章`);
+  return filteredArticles;
 }
 
 async function generateWeeklyReport(articles) {
   console.log('正在调用Dify生成周报...');
   
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - 7);
+  const weekStartStr = weekStart.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '.');
+  const weekEndStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '.');
+
   const prompt = `
 请你基于以下所有AI新闻，生成一份《本周AI圈重大事件》周报。
 严格遵守以下所有要求，一条都不能违反：
@@ -72,7 +79,7 @@ async function generateWeeklyReport(articles) {
    - 每个事件用1-2句话总结
    - 每个事件结尾必须附带原文链接，格式：（原文链接：XXX）
 4. 格式要求：
-   - 标题：【本周AI圈重大事件（YYYY年MM月DD日-MM月DD日）】（日期自动替换为过去7天）
+   - 标题：【本周AI圈重大事件（${weekStartStr}-${weekEndStr}）】
    - 分类标题：用"### 分类名称"格式
    - 事件开头用"- "
 5. 绝对禁止：输出任何思考过程、分析逻辑、解释说明，只输出最终的周报内容！
@@ -81,9 +88,11 @@ async function generateWeeklyReport(articles) {
 ${JSON.stringify(articles, null, 2)}
 `;
 
+  // 修复了：工作流应用的API参数格式
   const response = await axios.post(DIFY_API_URL, {
-    inputs: {},
-    query: prompt,
+    inputs: {
+      query: prompt
+    },
     response_mode: 'blocking',
     user: 'github-actions'
   }, {
@@ -93,7 +102,7 @@ ${JSON.stringify(articles, null, 2)}
     }
   });
 
-  return response.data.answer;
+  return response.data.data.outputs.text;
 }
 
 async function sendToWechat(content) {
@@ -123,6 +132,9 @@ async function main() {
     console.log('全部任务完成！');
   } catch (error) {
     console.error('任务失败:', error);
+    if (error.response) {
+      console.error('响应错误:', error.response.data);
+    }
     process.exit(1);
   }
 }
