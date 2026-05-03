@@ -1,9 +1,9 @@
-const Parser = require('rss-parser');
-const axios = require('axios');
+import Parser from 'rss-parser';
+import axios from 'axios';
 
 const parser = new Parser();
 
-// 国内10大AI/科技媒体RSS源（直接复制我之前给你的，已集成）
+// 国内10大AI/科技媒体RSS源
 const RSS_SOURCES = [
   'https://www.qbitai.com/feed',
   'https://www.jiqizhixin.com/rss',
