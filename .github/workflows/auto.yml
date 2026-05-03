@@ -23,4 +23,4 @@ jobs:
         env:
           DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}  # 注意：这里改成DIFY_API_KEY，更标准
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-        run: node ./workflow/dify.js
+       run: node ./workflow/dify.cjs
